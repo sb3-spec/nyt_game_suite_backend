@@ -20,11 +20,11 @@ use error::Error;
 const DEFAULT_API_PORT: u16 = 8080;
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().ok();
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
-    let redis_url = env::var("REDIS_URL").expect("REDIS_URL must be set.");
+    // dotenv::dotenv().ok();
+    let db_url = env::var("DATABASE_URL").unwrap();
+    let redis_url = env::var("REDIS_URL").unwrap();
 
-    println!("DATABASE_URL: {db_url}");
+    // println!("DATABASE_URL: {db_url}");
 
     let db = Arc::new(connect_to_db(&db_url).await.unwrap());
     let cache = Arc::new(Mutex::new(conenct_to_cache(&redis_url).await.unwrap()));
