@@ -5,6 +5,7 @@ use sqlx::PgPool;
 
 pub struct WordleManager;
 
+#[allow(unused)]
 impl WordleManager {
     pub fn new() -> Self {
         Self

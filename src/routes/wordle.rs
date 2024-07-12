@@ -32,7 +32,7 @@ async fn validate_guess(
 ) -> Result<Json, warp::Rejection> {
     let wordle_manager = WordleManager;
     if !wordle_manager.validate_guess(&db, &guess).await {
-        json_response(vec![3, 3, 3, 3, 3]);
+        return json_response(vec![3, 3, 3, 3, 3]);
     }
 
     let response = wordle_manager.evaluate_guess(&guess, &answer).await;
