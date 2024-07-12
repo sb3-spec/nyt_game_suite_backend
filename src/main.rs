@@ -9,6 +9,7 @@ use std::{
 };
 
 mod error;
+mod filters;
 mod managers;
 mod routes;
 
