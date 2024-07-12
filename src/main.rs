@@ -4,7 +4,6 @@ use routes::start_server;
 use sqlx::PgPool;
 use std::{
     env,
-    str::FromStr,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -59,7 +58,7 @@ pub async fn connect_to_db(db_url: &str) -> Result<PgPool, Error> {
     let pool = PgPool::connect(db_url).await?;
     // println!("Connected to database!");
 
-    sqlx::migrate!().run(&pool).await?;
+    // sqlx::migrate!().run(&pool).await?;
 
     Ok(pool)
 }
