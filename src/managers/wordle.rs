@@ -10,6 +10,7 @@ impl WordleManager {
     pub fn new() -> Self {
         Self
     }
+    /// Checks if the guess is a valid word
     pub async fn validate_guess(&self, db: &PgPool, guess: &str) -> bool {
         match sqlx::query!(r#"SELECT * FROM valid_words WHERE word = $1"#, guess)
             .fetch_one(db)
@@ -20,6 +21,7 @@ impl WordleManager {
         }
     }
 
+    /// Sets the new daily word at midnight
     pub async fn daily_word(
         db: &PgPool,
         cache_connection: &mut redis::Connection,
@@ -71,6 +73,7 @@ impl WordleManager {
         new_word
     }
 
+    /// Assumes guess is a valid word. Compares guess with the correct word and returns a score vector
     pub async fn evaluate_guess(&self, correct_word: &str, guess: &str) -> Vec<i32> {
         if correct_word.len() != guess.len() && guess.len() != 5 {
             return vec![3, 3, 3, 3, 3];
