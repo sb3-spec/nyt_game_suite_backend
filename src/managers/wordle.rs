@@ -131,6 +131,17 @@ impl WordleManager {
 
         return response;
     }
+
+    /// Counts the number of days the wordle has been updated
+    pub async fn get_wordle_day_count(&self, db: &PgPool) -> i64 {
+        match sqlx::query!(r#"SELECT COUNT(*) FROM word_bank WHERE last_used_on IS NOT NULL"#,)
+            .fetch_one(db)
+            .await
+        {
+            Ok(count) => count.count.unwrap_or_else(|| 0) + 1,
+            Err(_) => 1,
+        }
+    }
 }
 
 #[cfg(test)]
