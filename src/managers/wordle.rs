@@ -3,6 +3,11 @@ use std::collections::HashMap;
 use crate::error::Error;
 use sqlx::PgPool;
 
+/// Function List
+/// validate_guess: Checks if the guess is a valid word
+/// daily_word: Sets the new daily word at midnight
+/// get_daily_word: Retrieves the current daily word
+///
 pub struct WordleManager;
 
 #[allow(unused)]
@@ -23,6 +28,7 @@ impl WordleManager {
 
     /// Sets the new daily word at midnight
     pub async fn daily_word(
+        &self,
         db: &PgPool,
         cache_connection: &mut redis::Connection,
     ) -> Result<String, Error> {
@@ -35,19 +41,23 @@ impl WordleManager {
         .word;
 
         // println!("{daily_word}");
-
-        let cache_word = redis::cmd("SET")
-            .arg("daily_word")
-            .arg(daily_word)
-            .query::<String>(cache_connection)?;
-
-        sqlx::query!(
+        match sqlx::query!(
             r#"UPDATE word_bank SET last_used_on = current_date::date WHERE word = $1"#,
-            &cache_word
+            &daily_word
         )
         .execute(db)
-        .await?;
-        Ok(cache_word)
+        .await
+        {
+            Ok(_) => println!("Daily word updated!"),
+            Err(_) => println!("Failed to update daily word"),
+        };
+
+        redis::cmd("SET")
+            .arg("daily_word")
+            .arg(&daily_word)
+            .query::<String>(cache_connection)?;
+
+        Ok(daily_word)
     }
 
     pub async fn get_daily_word(&self, cache_conn: &mut redis::Connection) -> String {
@@ -133,13 +143,16 @@ impl WordleManager {
     }
 
     /// Counts the number of days the wordle has been updated
-    pub async fn get_wordle_day_count(&self, db: &PgPool) -> i64 {
+    pub async fn get_daily_wordle_count(&self, db: &PgPool) -> i64 {
         match sqlx::query!(r#"SELECT COUNT(*) FROM word_bank WHERE last_used_on IS NOT NULL"#,)
             .fetch_one(db)
             .await
         {
             Ok(count) => count.count.unwrap_or_else(|| 0) + 1,
-            Err(_) => 1,
+            Err(err) => {
+                println!("{err}");
+                return 1;
+            }
         }
     }
 }

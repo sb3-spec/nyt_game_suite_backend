@@ -2,13 +2,18 @@ use serde::Serialize;
 use serde_json::json;
 use sqlx::PgPool;
 use std::{convert::Infallible, sync::Arc};
+use tokio::sync::Mutex;
 use warp::{reply::Json, Filter};
 use wordle::wordle_rest_filters;
 
 mod wordle;
 use crate::error::Error;
 
-pub async fn start_server(web_port: u16, db: Arc<PgPool>) -> Result<(), Error> {
+pub async fn start_server(
+    web_port: u16,
+    db: Arc<PgPool>,
+    cache: Arc<Mutex<redis::Connection>>,
+) -> Result<(), Error> {
     let cors = warp::cors()
         .allow_origins(["http://localhost:5173"])
         .allow_headers(vec!["X-Auth-Token", "Content-Type", "content-type"])
@@ -22,13 +27,15 @@ pub async fn start_server(web_port: u16, db: Arc<PgPool>) -> Result<(), Error> {
 
     let static_site = root_index.or(content);
 
-    let api = wordle_rest_filters(db.clone());
+    let api = wordle_rest_filters(db.clone(), cache.clone());
 
     let routes = static_site.or(api).with(cors);
 
     println!("Starting server on port {web_port}");
 
-    warp::serve(routes).run(([0, 0, 0, 0], web_port)).await;
+    warp::serve(routes)
+        .run(([0, 0, 0, 0], web_port.to_owned()))
+        .await;
 
     Ok(())
 }

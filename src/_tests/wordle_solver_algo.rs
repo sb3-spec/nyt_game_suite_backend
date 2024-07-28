@@ -21,3 +21,21 @@ async fn test_wordle_solver() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+// #[tokio::test]
+// async fn test_set_daily_word() -> Result<(), Box<dyn std::error::Error>> {
+//     dotenv::dotenv().ok();
+//     let db_url = env::var("DATABASE_URL").unwrap();
+//     let cache_url = env::var("REDIS_URL").unwrap();
+
+//     let db_conn = connect_to_db(&db_url).await?;
+//     let mut cache_conn = connect_to_cache(&cache_url).await?;
+
+//     let wordle_manager = WordleManager::new();
+
+//     let daily_word = wordle_manager.daily_word(&db_conn, &mut cache_conn).await?;
+
+//     // println!("Daily word: {daily_word}");
+
+//     Ok(())
+// }

@@ -3,14 +3,21 @@ use std::{convert::Infallible, sync::Arc};
 use serde::Serialize;
 use serde_json::json;
 use sqlx::PgPool;
+use tokio::sync::Mutex;
 use warp::{reply::Json, Filter};
+#[allow(dead_code)]
 
-use crate::Error;
-
+// use crate::Error;
 pub fn with_db(
     db: Arc<PgPool>,
 ) -> impl Filter<Extract = (Arc<PgPool>,), Error = Infallible> + Clone {
     warp::any().map(move || db.clone())
+}
+
+pub fn with_cache(
+    cache: Arc<Mutex<redis::Connection>>,
+) -> impl Filter<Extract = (Arc<Mutex<redis::Connection>>,), Error = Infallible> + Clone {
+    warp::any().map(move || cache.clone())
 }
 
 // pub fn wordle_api_filters(
@@ -25,6 +32,7 @@ pub fn with_db(
 //         .and(common.clone())
 // }
 
+#[allow(dead_code)]
 fn json_response<D: Serialize>(data: D) -> Result<Json, warp::Rejection> {
     let response = json!({"data": data});
     Ok(warp::reply::json(&response))
